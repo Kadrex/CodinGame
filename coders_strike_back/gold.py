@@ -1,4 +1,5 @@
-import math, sys
+import math
+import sys
 
 
 class Robot:
@@ -13,10 +14,8 @@ class Robot:
         self.my_previous_y = 0
         self.speed_vector_x = 0
         self.speed_vector_y = 0
-        self.checkpoint_x = 0
-        self.checkpoint_y = 0
         self.checkpoint_distance = 0
-        self.checkpoint_angle = 0
+        self.angle = 0
         self.thrust = 100
         self.previous_checkpoint_distance = 0
         self.aim_x = 0
@@ -24,15 +23,18 @@ class Robot:
         self.next_checkpoint_id = 0
 
     def my_distance_to_checkpoint(self):
-        return math.sqrt(abs(self.my_x - self.checkpoint_x) ** 2 + abs(self.my_y - self.checkpoint_y) ** 2)
+        return math.sqrt(abs(self.my_x - self.checkpoints[self.next_checkpoint_id][0]) ** 2
+                         + abs(self.my_y - self.checkpoints[self.next_checkpoint_id][1]) ** 2)
 
     def print_data(self):
-        print("Angle... " + str(self.checkpoint_angle), file=sys.stderr)
-        print("Speed vectors: " + str(self.speed_vector_x) + "; " + str(self.speed_vector_y), file=sys.stderr)
+        #print("Angle... " + str(self.checkpoint_angle), file=sys.stderr)
+        #print("Speed vectors: " + str(self.speed_vector_x) + "; " + str(self.speed_vector_y), file=sys.stderr)
+        print("Checkpoint coordinates: " + str(self.checkpoints[self.next_checkpoint_id][0]) + " "
+              + str(self.checkpoints[self.next_checkpoint_id][1]), file=sys.stderr)
+        print("My coordinates: " + str(self.my_x) + " " + str(self.my_y), file=sys.stderr)
         print("Distance to checkpoint: " + str(self.checkpoint_distance), file=sys.stderr)
-        print("Distance before: " + str(self.previous_checkpoint_distance) + "\nDistance now: " + str(self.checkpoint_distance), file=sys.stderr)
-        print("Difference: " + str(self.previous_checkpoint_distance - self.checkpoint_distance), file=sys.stderr)
-        print("Checkpoint coordinates: " + str(self.checkpoint_x) + " " + str(self.checkpoint_y), file=sys.stderr)
+        #print("Distance before: " + str(self.previous_checkpoint_distance) + "\nDistance now: " + str(self.checkpoint_distance), file=sys.stderr)
+        #print("Difference: " + str(self.previous_checkpoint_distance - self.checkpoint_distance), file=sys.stderr)
 
     def plan(self):
         self.checkpoint_distance = self.my_distance_to_checkpoint()
@@ -42,11 +44,10 @@ class Robot:
         if self.previous_checkpoint_distance > 0:
             self.aim_x += self.my_previous_x - self.my_x
             self.aim_y += self.my_previous_y - self.my_y
-        if self.checkpoint_angle > 100 or self.checkpoint_angle < -100:
-            self.thrust = 15
-            if self.checkpoint_distance < 1780:
-                self.thrust = 5
-        elif self.checkpoint_distance < 1500:
+        if self.checkpoint_distance < 1000:
+            self.aim_x = self.checkpoints[(self.next_checkpoint_id + 1) % len(self.checkpoints)][0]
+            self.aim_y = self.checkpoints[(self.next_checkpoint_id + 1) % len(self.checkpoints)][1]
+        if self.checkpoint_distance < 1500:
             self.thrust = 80
         elif self.checkpoint_distance > 3700:
             self.thrust = "BOOST"
@@ -74,12 +75,13 @@ class Data:
 
     def sense(self):
         self.robot1.my_x, self.robot1.my_y, self.robot1.speed_vector_x, \
-            self.robot1.speed_vector_y, self.robot1.checkpoint_angle, \
+            self.robot1.speed_vector_y, self.robot1.angle, \
             self.robot1.next_checkpoint_id = [int(i) for i in input().split()]
 
         self.robot2.my_x, self.robot2.my_y, self.robot2.speed_vector_x, \
-            self.robot2.speed_vector_y, self.robot2.checkpoint_angle, \
+            self.robot2.speed_vector_y, self.robot2.angle, \
             self.robot2.next_checkpoint_id = [int(i) for i in input().split()]
+
         input()
         input()
 
